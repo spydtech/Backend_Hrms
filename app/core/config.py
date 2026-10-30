@@ -56,13 +56,81 @@
 # settings = get_settings()
 
 
-from functools import lru_cache
+# from functools import lru_cache
 
+# from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+# class Settings(BaseSettings):
+#     model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=True)
+
+#     APP_NAME: str = "HRMS Backend"
+#     ENVIRONMENT: str = "development"
+#     DEBUG: bool = True
+#     API_V1_PREFIX: str = "/api/v1"
+
+#     SECRET_KEY: str = "change-me-in-production"
+#     ALGORITHM: str = "HS256"
+#     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+
+#     MYSQL_HOST: str = "127.0.0.1"
+#     MYSQL_PORT: int = 3306
+#     MYSQL_USER: str = "u861150102_spydhrms"
+#     MYSQL_PASSWORD: str = "Spydhrms@2026"
+#     MYSQL_DB: str = "u861150102_hrms"
+
+#     MYSQL_SCHEMA: str = "app"
+#     MYSQL_CHARSET: str = "utf8mb4"
+#     MYSQL_COLLATION: str = "utf8mb4_unicode_ci"
+
+#     CORS_ORIGINS: list[str] = [
+#         "http://localhost:3000",
+#         "http://localhost:5173",
+#         "http://localhost:5174",
+#         "http://127.0.0.1:3000",
+#         "http://127.0.0.1:5173",
+#         "http://127.0.0.1:5174",
+#         "https://www.hrms.spydtech.com",
+#         "https://www.api.hrms.spydtech.com",
+#     ]
+
+#     SUPER_ADMIN_NAME: str = "Super Admin"
+#     SUPER_ADMIN_EMAIL: str = "superadmin@hrms.com"
+#     SUPER_ADMIN_PASSWORD: str = "SuperAdmin@123"
+
+#     @property
+#     def database_url(self) -> str:
+#         # NOTE: aiomysql does NOT accept `collation` as a connect() kwarg.
+#         # Collation is applied per-connection via a "connect" event listener
+#         # (see app/db/session.py). Only pass `charset` here.
+#         return (
+#             f"mysql+aiomysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
+#             f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}"
+#             f"?charset={self.MYSQL_CHARSET}"
+#         )
+
+#     @property
+#     def is_production(self) -> bool:
+#         return self.ENVIRONMENT == "production"
+
+
+# @lru_cache
+# def get_settings() -> Settings:
+#     return Settings()
+
+
+# settings = get_settings()
+from functools import lru_cache
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore", case_sensitive=True)
+    model_config = SettingsConfigDict(
+        env_file=".env", 
+        extra="ignore", 
+        case_sensitive=True
+    )
 
     APP_NAME: str = "HRMS Backend"
     ENVIRONMENT: str = "development"
@@ -73,11 +141,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
-    MYSQL_HOST: str = "localhost"
+    MYSQL_HOST: str = "127.0.0.1"
     MYSQL_PORT: int = 3306
-    MYSQL_USER: str = "root"
-    MYSQL_PASSWORD: str = "root"
-    MYSQL_DB: str = "app"
+    MYSQL_USER: str = "u861150102_spydhrms"
+    MYSQL_PASSWORD: str = "Spydhrms@2026"
+    MYSQL_DB: str = "u861150102_hrms"
 
     MYSQL_SCHEMA: str = "app"
     MYSQL_CHARSET: str = "utf8mb4"
@@ -86,10 +154,6 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list[str] = [
         "http://localhost:3000",
         "http://localhost:5173",
-        "http://localhost:5174",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
         "https://www.hrms.spydtech.com",
         "https://www.api.hrms.spydtech.com",
     ]
@@ -98,11 +162,27 @@ class Settings(BaseSettings):
     SUPER_ADMIN_EMAIL: str = "superadmin@hrms.com"
     SUPER_ADMIN_PASSWORD: str = "SuperAdmin@123"
 
+    @field_validator("CORS_ORIGINS", mode="before")
+    @classmethod
+    def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
+        """Allow comma-separated strings or JSON arrays in .env"""
+        if isinstance(v, str):
+            # If it looks like a JSON array, try to parse it
+            if v.startswith("[") and v.endswith("]"):
+                import json
+                try:
+                    return json.loads(v)
+                except json.JSONDecodeError:
+                    # Fallback: strip brackets and split by comma
+                    v = v.strip("[]")
+            # Standard comma-separated string
+            return [i.strip().strip('"').strip("'") for i in v.split(",")]
+        elif isinstance(v, list):
+            return v
+        raise ValueError(v)
+
     @property
     def database_url(self) -> str:
-        # NOTE: aiomysql does NOT accept `collation` as a connect() kwarg.
-        # Collation is applied per-connection via a "connect" event listener
-        # (see app/db/session.py). Only pass `charset` here.
         return (
             f"mysql+aiomysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
             f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}"
