@@ -143,7 +143,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
     # Default values will be overridden by .env
-    MYSQL_HOST: str = "172.17.0.1" 
+    MYSQL_HOST: str = "127.0.0.1" 
     MYSQL_PORT: int = 3306
     MYSQL_USER: str = "u861150102_spydhrms"
     MYSQL_PASSWORD: str = "Spydhrms@2026"
