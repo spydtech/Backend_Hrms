@@ -121,6 +121,7 @@
 
 # settings = get_settings()
 from functools import lru_cache
+from urllib.parse import quote_plus  # 👈 Added to fix the '@' in password
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -141,7 +142,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
 
-    MYSQL_HOST: str = "127.0.0.1"
+    # Default values will be overridden by .env
+    MYSQL_HOST: str = "172.17.0.1" 
     MYSQL_PORT: int = 3306
     MYSQL_USER: str = "u861150102_spydhrms"
     MYSQL_PASSWORD: str = "Spydhrms@2026"
@@ -167,15 +169,12 @@ class Settings(BaseSettings):
     def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
         """Allow comma-separated strings or JSON arrays in .env"""
         if isinstance(v, str):
-            # If it looks like a JSON array, try to parse it
             if v.startswith("[") and v.endswith("]"):
                 import json
                 try:
                     return json.loads(v)
                 except json.JSONDecodeError:
-                    # Fallback: strip brackets and split by comma
                     v = v.strip("[]")
-            # Standard comma-separated string
             return [i.strip().strip('"').strip("'") for i in v.split(",")]
         elif isinstance(v, list):
             return v
@@ -183,8 +182,12 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
+        # 👇 quote_plus safely encodes the '@' and special characters
+        safe_user = quote_plus(self.MYSQL_USER)
+        safe_password = quote_plus(self.MYSQL_PASSWORD)
+        
         return (
-            f"mysql+aiomysql://{self.MYSQL_USER}:{self.MYSQL_PASSWORD}"
+            f"mysql+aiomysql://{safe_user}:{safe_password}"
             f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}"
             f"?charset={self.MYSQL_CHARSET}"
         )
