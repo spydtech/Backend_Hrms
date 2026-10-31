@@ -211,11 +211,93 @@
 
 
 
+# from functools import lru_cache
+# from urllib.parse import quote_plus
+# from pydantic import field_validator
+# from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+# class Settings(BaseSettings):
+#     model_config = SettingsConfigDict(
+#         env_file=".env", 
+#         extra="ignore", 
+#         case_sensitive=True
+#     )
+
+#     APP_NAME: str = "HRMS Backend"
+#     ENVIRONMENT: str = "production"
+#     DEBUG: bool = False
+#     API_V1_PREFIX: str = "/api/v1"
+
+#     SECRET_KEY: str = "change-me-in-production"
+#     ALGORITHM: str = "HS256"
+#     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24
+
+#     MYSQL_HOST: str = "auth-db1983.hstgr.io"
+#     MYSQL_PORT: int = 3306
+#     MYSQL_USER: str = "u861150102_spydhrms"
+#     MYSQL_PASSWORD: str = "Spydhrms@2026"
+#     MYSQL_DB: str = "u861150102_hrms"
+
+#     MYSQL_SCHEMA: str = "app"
+#     MYSQL_CHARSET: str = "utf8mb4"
+#     MYSQL_COLLATION: str = "utf8mb4_unicode_ci"
+
+#     CORS_ORIGINS: list[str] = [
+#         "https://www.hrms.spydtech.com",
+#         "https://www.api.hrms.spydtech.com",
+#         "https://hrms.spydtech.com",
+#         "https://api.hrms.spydtech.com",
+#     ]
+
+#     SUPER_ADMIN_NAME: str = "Super Admin"
+#     SUPER_ADMIN_EMAIL: str = "superadmin@hrms.com"
+#     SUPER_ADMIN_PASSWORD: str = "SuperAdmin@123"
+
+#     @field_validator("CORS_ORIGINS", mode="before")
+#     @classmethod
+#     def assemble_cors_origins(cls, v: str | list[str]) -> list[str] | str:
+#         if isinstance(v, str):
+#             if v.startswith("[") and v.endswith("]"):
+#                 import json
+#                 try:
+#                     return json.loads(v)
+#                 except json.JSONDecodeError:
+#                     v = v.strip("[]")
+#             return [i.strip().strip('"').strip("'") for i in v.split(",")]
+#         elif isinstance(v, list):
+#             return v
+#         raise ValueError(v)
+
+#     @property
+#     def database_url(self) -> str:
+#         safe_user = quote_plus(self.MYSQL_USER)
+#         safe_password = quote_plus(self.MYSQL_PASSWORD)
+#         return (
+#             f"mysql+aiomysql://{safe_user}:{safe_password}"
+#             f"@{self.MYSQL_HOST}:{self.MYSQL_PORT}/{self.MYSQL_DB}"
+#             f"?charset={self.MYSQL_CHARSET}"
+#         )
+
+#     @property
+#     def is_production(self) -> bool:
+#         return self.ENVIRONMENT == "production"
+
+
+# @lru_cache
+# def get_settings() -> Settings:
+#     return Settings()
+
+
+# settings = get_settings()
+
+
+
+
 from functools import lru_cache
 from urllib.parse import quote_plus
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -245,8 +327,8 @@ class Settings(BaseSettings):
 
     CORS_ORIGINS: list[str] = [
         "https://www.hrms.spydtech.com",
-        "https://www.api.hrms.spydtech.com",
         "https://hrms.spydtech.com",
+        "https://www.api.hrms.spydtech.com",
         "https://api.hrms.spydtech.com",
     ]
 
@@ -283,10 +365,8 @@ class Settings(BaseSettings):
     def is_production(self) -> bool:
         return self.ENVIRONMENT == "production"
 
-
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
-
 
 settings = get_settings()
