@@ -333,8 +333,8 @@ class Settings(BaseSettings):
     ]
 
     SUPER_ADMIN_NAME: str = "Super Admin"
-    SUPER_ADMIN_EMAIL: str = "superadmin@hrms.com"
-    SUPER_ADMIN_PASSWORD: str = "SuperAdmin@123"
+    SUPER_ADMIN_EMAIL: str = "admin@spyd-tech.com"
+    SUPER_ADMIN_PASSWORD: str = "Spydtech@2026"
 
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
